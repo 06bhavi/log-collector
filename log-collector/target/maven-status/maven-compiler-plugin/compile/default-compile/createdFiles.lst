@@ -1,0 +1,4 @@
+com\devops\logcollector\controller\LogController.class
+com\devops\logcollector\LogCollectorApplication.class
+com\devops\logcollector\controller\GlobalExceptionHandler.class
+com\devops\logcollector\model\UserEvent.class

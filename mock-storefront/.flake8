@@ -1,0 +1,31 @@
+[flake8]
+# ── Line length ───────────────────────────────────────────────────────────────
+# 100 chars matches modern Python project conventions (Black default is 88).
+# The existing codebase uses descriptive log strings that exceed PEP-8's 79.
+max-line-length = 100
+
+# ── Directories & files to skip ──────────────────────────────────────────────
+exclude =
+    .venv,
+    venv,
+    __pycache__,
+    .git,
+    *.egg-info,
+    dist,
+    build
+
+# ── Ignored rules ─────────────────────────────────────────────────────────────
+# E501 — line too long  (enforced by max-line-length above, not the hard 79)
+# W503 — line break before binary operator (conflicts with Black style)
+# E402 — module level import not at top (FastAPI lifespan pattern triggers this)
+ignore = W503
+
+# ── Per-file ignores ──────────────────────────────────────────────────────────
+per-file-ignores =
+    # __init__ files are intentionally minimal / sometimes empty
+    app/__init__.py: F401
+
+# ── Statistics ────────────────────────────────────────────────────────────────
+# Printed automatically in CI via the --statistics flag in the workflow
+statistics = True
+count = True

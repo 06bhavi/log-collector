@@ -1,0 +1,158 @@
+# =============================================================================
+#  docker-compose.yml — E-commerce Microservices Stack
+#
+#  Services
+#  ────────
+#  namenode           │ Hadoop NameNode  (HDFS metadata / coordination)
+#  datanode           │ Hadoop DataNode  (HDFS block storage)
+#  log-collector      │ Spring Boot REST API — receives events → writes to HDFS
+#  mock-storefront    │ FastAPI service  — generates & POSTs fake e-commerce events
+#  analytics-dashboard│ React/Nginx SPA  — reads /api/stats and renders charts
+#
+#  Network: ecommerce-net (custom bridge — all services resolve by hostname)
+# =============================================================================
+
+services:
+
+  # ── Hadoop NameNode ─────────────────────────────────────────────────────────
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    hostname: namenode
+    restart: unless-stopped
+    ports:
+      - "9870:9870"   # NameNode Web UI
+      - "9000:9000"   # HDFS RPC port  (hdfs://namenode:9000)
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=ecommerce-cluster
+      # Allow the DataNode to connect from any host on the bridge network
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - CORE_CONF_hadoop_http_staticuser_user=root
+      - HDFS_CONF_dfs_replication=1
+      - HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check=false
+    env_file:
+      - ./hadoop.env
+    networks:
+      - ecommerce-net
+    healthcheck:
+      test: ["CMD", "curl", "-fsSL", "http://localhost:9870/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # ── Hadoop DataNode ─────────────────────────────────────────────────────────
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode
+    hostname: datanode
+    restart: unless-stopped
+    volumes:
+      - hadoop_datanode:/hadoop/dfs/data
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - HDFS_CONF_dfs_replication=1
+    env_file:
+      - ./hadoop.env
+    networks:
+      - ecommerce-net
+    depends_on:
+      namenode:
+        condition: service_healthy
+
+  # ── Log Collector (Spring Boot) ─────────────────────────────────────────────
+  log-collector:
+    build:
+      context: ./log-collector          # pom.xml + src/ + Dockerfile live here
+      dockerfile: Dockerfile
+    image: log-collector:latest
+    container_name: log-collector
+    hostname: log-collector
+    restart: unless-stopped
+    ports:
+      - "8080:8080"                     # REST API  → POST /api/logs
+    environment:
+      # HDFS target — overrides application.properties defaults
+      - HDFS_URI=hdfs://namenode:9000
+      - HDFS_LOG_PATH=/logs/ecommerce_data.json
+      # JVM tuning (referenced in Dockerfile ENTRYPOINT)
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError
+    networks:
+      - ecommerce-net
+    depends_on:
+      namenode:
+        condition: service_healthy
+      datanode:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health 2>/dev/null | grep -q '\"status\":\"UP\"' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Mock Storefront (FastAPI / Python) ──────────────────────────────────────
+  mock-storefront:
+    build:
+      context: ./mock-storefront        # requirements.txt + app/ + Dockerfile live here
+      dockerfile: Dockerfile
+    image: mock-storefront:latest
+    container_name: mock-storefront
+    hostname: mock-storefront
+    restart: unless-stopped
+    ports:
+      - "8000:8000"                     # FastAPI docs → http://localhost:8000/docs
+    environment:
+      # Must match the log-collector container hostname and port
+      - LOG_COLLECTOR_URL=http://log-collector:8080/api/logs
+      - EMIT_INTERVAL_SECONDS=2
+    networks:
+      - ecommerce-net
+    depends_on:
+      log-collector:
+        condition: service_healthy
+
+  # ── Analytics Dashboard (React + Nginx) ─────────────────────────────────────
+  analytics-dashboard:
+    build:
+      context: ./analytics-dashboard    # Dockerfile does Node build + Nginx copy
+      dockerfile: Dockerfile
+      args:
+        # Passes the Java API URL into the Vite build so axios knows where to call
+        VITE_API_BASE_URL: http://localhost:8080
+    image: analytics-dashboard:latest
+    container_name: analytics-dashboard
+    hostname: analytics-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:80"                       # Dashboard UI → http://localhost:3000
+    networks:
+      - ecommerce-net
+    depends_on:
+      log-collector:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# =============================================================================
+#  Named volumes — persist HDFS data across container restarts
+# =============================================================================
+volumes:
+  hadoop_namenode:
+    name: ecommerce_hadoop_namenode
+  hadoop_datanode:
+    name: ecommerce_hadoop_datanode
+
+# =============================================================================
+#  Custom bridge network — all services share DNS resolution by hostname
+# =============================================================================
+networks:
+  ecommerce-net:
+    name: ecommerce-net
+    driver: bridge
