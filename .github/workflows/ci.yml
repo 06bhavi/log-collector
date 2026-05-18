@@ -66,9 +66,6 @@ jobs:
           pip install flake8
 
       - name: Run flake8
-        # --count   → print total error count at the end
-        # --statistics → show per-rule summary
-        # Config is read automatically from .flake8 in this directory
         run: |
           flake8 app/ \
             --count \
@@ -95,25 +92,20 @@ jobs:
         with:
           java-version: "17"
           distribution: temurin
-          # Cache ~/.m2/repository keyed on pom.xml hash — restores on next run
           cache: maven
 
       - name: Run unit tests
-        # -B            → batch mode (no progress bars, cleaner CI output)
-        # -Dstyle.color → coloured output in GitHub log
         run: mvn clean test -B -Dstyle.color=always
 
       - name: Package uber-JAR (skip tests — already ran above)
         run: mvn package -DskipTests -B
 
-      # Upload the JAR so the image-build job doesn't need a second Maven run
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: log-collector-jar
-          # Path is relative to GITHUB_WORKSPACE (repo root), not working-directory
           path: log-collector/target/log-collector.jar
-          retention-days: 1     # ephemeral — only needed within this workflow run
+          retention-days: 1    
 
   # ────────────────────────────────────────────────────────────────────────────
   # JOB 3 — Build Docker images & push to GHCR
@@ -138,9 +130,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: log-collector-jar
-          # Download into the exact path the Dockerfile's COPY expects:
-          #   ARG JAR_FILE=target/log-collector.jar
-          #   COPY ${JAR_FILE} app.jar
           path: log-collector/target/
 
       # ── Docker Buildx (enables layer caching & multi-platform support) ──────
@@ -157,7 +146,6 @@ jobs:
 
       # ── Derive image tags ───────────────────────────────────────────────────
       # repo_lower: GHCR requires the repository path to be lowercase
-      # sha_short:  7-char SHA for pinnable, traceable image tags
       - name: Compute image metadata
         id: meta
         run: |
@@ -199,11 +187,7 @@ jobs:
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
 
-      # ── Build & push: analytics-dashboard ──────────────────────────────────
-      # The Vite build bakes VITE_API_BASE_URL at compile time via --build-arg.
-      # In production this should point to the public log-collector hostname.
-      # Override with a repository variable (Settings → Variables) if needed:
-      #   VITE_API_BASE_URL = https://api.your-domain.com
+     
       - name: Build & push analytics-dashboard
         uses: docker/build-push-action@v6
         with:

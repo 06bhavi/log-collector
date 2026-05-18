@@ -127,7 +127,7 @@ services:
     hostname: analytics-dashboard
     restart: unless-stopped
     ports:
-      - "3000:80"                       # Dashboard UI → http://localhost:3000
+      - "3001:80"                       # Dashboard UI → http://localhost:3001
     networks:
       - ecommerce-net
     depends_on:

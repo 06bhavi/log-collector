@@ -50,7 +50,7 @@ public class StatsService {
     private static final ObjectMapper  MAPPER = new ObjectMapper();
 
     private static final DateTimeFormatter MINUTE_FMT =
-            DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneOffset.UTC);
+            DateTimeFormatter.ofPattern("HH:mm").withZone(java.time.ZoneId.of("Asia/Kolkata"));
 
     private static final int TIMELINE_MINUTES = 30;
     private static final int TOP_N            = 10;

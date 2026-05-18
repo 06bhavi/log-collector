@@ -64,6 +64,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
+    /** 404 Not Found (e.g., visiting root / or unknown paths) */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        Map<String, Object> body = buildErrorBody(
+                HttpStatus.NOT_FOUND, "Not Found: " + ex.getResourcePath(), List.of());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
     /** Catch-all */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericError(Exception ex) {

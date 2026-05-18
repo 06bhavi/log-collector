@@ -17,26 +17,12 @@ import java.util.Map;
 
 /**
  * REST controller that exposes the event-log ingestion endpoint.
- *
- * <pre>
- * POST /api/logs
- * Content-Type: application/json
- *
- * {
- *   "userId":    "user-42",
- *   "action":    "add_to_cart",
- *   "timestamp": "2024-06-01T10:15:30Z",
- *   "productId": "prod-789"
- * }
- * </pre>
- *
- * <p>On each request the event is:
- * <ol>
- *   <li>Validated via Bean Validation (@Valid)
- *   <li>Serialised back to a compact JSON string
- *   <li>Appended as a newline-delimited record to HDFS via {@link HdfsService}
- *   <li>Also logged to stdout for immediate visibility in {@code docker logs}
- * </ol>
+ * On each request the event is:
+ *   Validated via Bean Validation (@Valid)
+ *   Serialised back to a compact JSON string
+ *   Appended as a newline-delimited record to HDFS via {@link HdfsService}
+ *   Also logged to stdout for immediate visibility in {@code docker logs}
+ * 
  */
 @RestController
 @RequestMapping("/api/logs")

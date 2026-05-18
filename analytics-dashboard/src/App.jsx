@@ -147,7 +147,7 @@ export default function App() {
                 <div className="chart-header">
                   <div>
                     <div className="chart-title">Events &amp; Purchases · Last 30 Minutes</div>
-                    <div className="chart-subtitle">1-minute UTC buckets · auto-refreshes every 10s</div>
+                    <div className="chart-subtitle">1-minute local time buckets · auto-refreshes every 10s</div>
                   </div>
                   <span className="chart-badge">Live</span>
                 </div>
@@ -215,11 +215,7 @@ export default function App() {
         )}
       </main>
 
-      {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <footer className="footer">
-        <span>E-Commerce Analytics · DevOps Project</span>
-        <span>Data source: <code style={{ color: '#6366f1' }}>hdfs://namenode:9000/logs/ecommerce_data.json</code></span>
-      </footer>
+
     </div>
   );
 }

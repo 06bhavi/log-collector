@@ -37,6 +37,10 @@ export default function EventTypeChart({ eventTypeCounts = {} }) {
           tick={{ fill: '#475569', fontSize: 10 }}
           tickLine={false}
           axisLine={false}
+          interval={0}
+          angle={-30}
+          textAnchor="end"
+          height={60}
         />
         <YAxis
           tick={{ fill: '#475569', fontSize: 11 }}

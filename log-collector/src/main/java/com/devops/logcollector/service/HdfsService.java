@@ -45,6 +45,7 @@ public class HdfsService {
     private String hdfsLogPath;
 
     private FileSystem fileSystem;
+    private FSDataOutputStream outputStream;
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -61,10 +62,18 @@ public class HdfsService {
         conf.set("hadoop.security.authentication", "simple");
         conf.set("dfs.client.use.datanode.hostname", "true");
 
+        // Fix for appending to a single-node HDFS cluster
+        conf.set("dfs.client.block.write.replace-datanode-on-failure.enable", "false");
+        conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
+
         fileSystem = FileSystem.get(conf);
         log.info("HDFS FileSystem connected → {}", hdfsUri);
 
         ensurePathExists();
+        
+        Path logPath = new Path(hdfsLogPath);
+        outputStream = fileSystem.append(logPath);
+        log.info("Opened HDFS append stream for: {}", logPath);
     }
 
     /**
@@ -73,6 +82,14 @@ public class HdfsService {
      */
     @PreDestroy
     public void destroy() {
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+                log.info("HDFS FSDataOutputStream closed.");
+            } catch (IOException e) {
+                log.warn("Error closing HDFS stream: {}", e.getMessage());
+            }
+        }
         if (fileSystem != null) {
             try {
                 fileSystem.close();
@@ -94,15 +111,10 @@ public class HdfsService {
      * @throws IOException if the HDFS write fails
      */
     public synchronized void appendLine(String jsonLine) throws IOException {
-        Path path = new Path(hdfsLogPath);
         byte[] bytes = (jsonLine + "\n").getBytes(StandardCharsets.UTF_8);
 
-        // FSDataOutputStream.append() requires dfs.support.append=true,
-        // which bde2020/hadoop-namenode enables by default.
-        try (FSDataOutputStream out = fileSystem.append(path)) {
-            out.write(bytes);
-            out.flush();
-        }
+        outputStream.write(bytes);
+        outputStream.hflush(); // Make data immediately visible to readers
 
         log.debug("Appended {} bytes to HDFS:{}", bytes.length, hdfsLogPath);
     }

@@ -10,8 +10,8 @@ const TOOLTIP_STYLE = {
   color: '#f1f5f9',
 };
 
-const COLOURS = ['#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#ef4444',
-                  '#8b5cf6', '#ec4899', '#14b8a6'];
+const COLOURS = ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#ef4444',
+                  '#8b5cf6', '#3b82f6', '#14b8a6'];
 
 const RADIAN = Math.PI / 180;
 function CustomLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
