@@ -9,9 +9,8 @@ storefront behaviour:
 """
 
 import random
-import uuid
 
-from app.schemas import UserEvent, VALID_ACTIONS
+from app.schemas import UserEvent
 
 # ── Static data pools ─────────────────────────────────────────────────────────
 
@@ -35,20 +34,21 @@ _PRODUCT_CATALOGUE: list[dict] = [
 # Actions weighted to reflect a realistic purchase funnel:
 #   Many views → some cart adds → fewer purchases
 _ACTION_WEIGHTS: dict[str, int] = {
-    "item_viewed":       45,
-    "add_to_cart":       20,
-    "remove_from_cart":   5,
-    "checkout_started":  10,
-    "purchase":           8,
-    "wishlist_add":       6,
-    "search_performed":  15,
-    "coupon_applied":     3,
+    "item_viewed": 45,
+    "add_to_cart": 20,
+    "remove_from_cart": 5,
+    "checkout_started": 10,
+    "purchase": 8,
+    "wishlist_add": 6,
+    "search_performed": 15,
+    "coupon_applied": 3,
 }
 
 _ACTIONS, _WEIGHTS = zip(*_ACTION_WEIGHTS.items())
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 
 def generate_event() -> UserEvent:
     """

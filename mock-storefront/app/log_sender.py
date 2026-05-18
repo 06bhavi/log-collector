@@ -68,7 +68,7 @@ async def _send_event(event: UserEvent, attempt: int = 1) -> bool:
         True on success, False after all retries are exhausted.
     """
     settings = get_settings()
-    client   = get_http_client()
+    client = get_http_client()
 
     try:
         response = await client.post(

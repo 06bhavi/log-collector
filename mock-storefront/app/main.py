@@ -94,9 +94,11 @@ app = FastAPI(
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
+
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/docs")
+
 
 @app.get(
     "/healthz",
@@ -123,12 +125,12 @@ async def service_status() -> dict:
         and not _event_loop_task.cancelled()
     )
     return {
-        "service":        "mock-storefront",
-        "version":        cfg.app_version,
-        "event_loop":     "running" if task_running else "stopped",
-        "target":         cfg.log_collector_url,
-        "emit_interval":  f"{cfg.emit_interval_seconds}s",
-        "server_time":    datetime.now(timezone.utc).isoformat(),
+        "service": "mock-storefront",
+        "version": cfg.app_version,
+        "event_loop": "running" if task_running else "stopped",
+        "target": cfg.log_collector_url,
+        "emit_interval": f"{cfg.emit_interval_seconds}s",
+        "server_time": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -161,7 +163,7 @@ async def inject_event(event: UserEvent) -> dict:
             detail="Failed to forward event to log-collector after retries.",
         )
     return {
-        "status":     "forwarded",
-        "event":      event.model_dump(),
+        "status": "forwarded",
+        "event": event.model_dump(),
         "forwarded_to": get_settings().log_collector_url,
     }
