@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Change this to match the repository name used in your GitHub Actions
-        GHCR_REPO = 'bhavi069/log-collector'
+        GHCR_REPO = '06bhavi/log-collector'
         REGISTRY = 'ghcr.io'
     }
 

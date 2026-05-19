@@ -1,16 +1,4 @@
-# =============================================================================
-#  docker-compose.yml — E-commerce Microservices Stack
-#
-#  Services
-#  ────────
-#  namenode           │ Hadoop NameNode  (HDFS metadata / coordination)
-#  datanode           │ Hadoop DataNode  (HDFS block storage)
-#  log-collector      │ Spring Boot REST API — receives events → writes to HDFS
-#  mock-storefront    │ FastAPI service  — generates & POSTs fake e-commerce events
-#  analytics-dashboard│ React/Nginx SPA  — reads /api/stats and renders charts
-#
-#  Network: ecommerce-net (custom bridge — all services resolve by hostname)
-# =============================================================================
+
 
 services:
 
