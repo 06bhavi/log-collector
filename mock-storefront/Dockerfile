@@ -1,15 +1,3 @@
-# ════════════════════════════════════════════════════════════════════════════
-#  Dockerfile — mock-storefront
-#  Base image : python:3.10-slim  (Debian Bullseye, no dev tools)
-#  Final size : ~120 MB
-#
-#  Security hardening applied:
-#   • Dedicated non-root user (appuser:appgroup)
-#   • No pip cache written to the image layer
-#   • Minimal OS packages – only what curl needs for healthcheck
-#   • Read-only-friendly filesystem layout
-# ════════════════════════════════════════════════════════════════════════════
-
 # ── Base ──────────────────────────────────────────────────────────────────────
 FROM python:3.10-slim AS base
 

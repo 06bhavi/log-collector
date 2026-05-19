@@ -1,14 +1,4 @@
-"""
-log_sender.py — Async background task that continuously emits e-commerce events.
 
-Design:
-  - Runs as a persistent asyncio loop alongside the FastAPI application.
-  - Uses httpx.AsyncClient with connection pooling (one client for the
-    lifetime of the process — no socket churn).
-  - Implements exponential back-off retries so transient log-collector
-    downtime doesn't crash the generator.
-  - Errors are logged and swallowed; the loop always continues.
-"""
 
 import asyncio
 import logging

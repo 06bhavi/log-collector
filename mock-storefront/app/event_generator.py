@@ -1,12 +1,4 @@
-"""
-event_generator.py — Realistic e-commerce event factory.
 
-Produces randomised but plausible UserEvent instances that mimic real
-storefront behaviour:
-  - A small pool of "users" keeps revisiting the shop
-  - The action sequence follows a rough purchase funnel weight distribution
-  - Products are drawn from a catalogue to simulate session continuity
-"""
 
 import random
 

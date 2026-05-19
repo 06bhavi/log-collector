@@ -1,16 +1,4 @@
-"""
-main.py — FastAPI application entry-point for mock-storefront.
 
-Lifecycle:
-  startup  → initialise shared HTTP client → launch background event loop
-  shutdown → cancel background task      → close HTTP client gracefully
-
-Endpoints:
-  GET  /healthz        – liveness probe (for Docker / k8s)
-  GET  /api/status     – human-readable service status
-  POST /api/events     – manually inject a single event (useful for testing)
-  GET  /api/events/sample – preview a randomly generated event payload
-"""
 
 import asyncio
 import logging

@@ -1,8 +1,4 @@
-"""
-config.py — Centralised settings loaded from environment variables / .env file.
 
-All tuneable knobs live here so that nothing is hard-coded in application logic.
-"""
 
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict

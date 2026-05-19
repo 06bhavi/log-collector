@@ -1,9 +1,3 @@
-"""
-schemas.py — Pydantic models that mirror the log-collector's UserEvent contract.
-
-Using the same field names/types ensures the JSON payload is always compatible
-with the Spring Boot service without any manual serialisation glue.
-"""
 
 from datetime import datetime, timezone
 from typing import Optional
