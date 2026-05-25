@@ -72,8 +72,29 @@ public class HdfsService {
         ensurePathExists();
         
         Path logPath = new Path(hdfsLogPath);
-        outputStream = fileSystem.append(logPath);
-        log.info("Opened HDFS append stream for: {}", logPath);
+        int maxRetries = 30;
+        for (int i = 0; i < maxRetries; i++) {
+            try {
+                outputStream = fileSystem.append(logPath);
+                log.info("Opened HDFS append stream for: {}", logPath);
+                break;
+            } catch (IOException e) {
+                if (e.getMessage() != null && (e.getMessage().contains("lease") || e.getMessage().contains("RecoveryInProgressException"))) {
+                    log.warn("File lease held by another client. Recovering lease or waiting... (Attempt {}/{})", i + 1, maxRetries);
+                    if (fileSystem instanceof org.apache.hadoop.hdfs.DistributedFileSystem) {
+                        try {
+                            ((org.apache.hadoop.hdfs.DistributedFileSystem) fileSystem).recoverLease(logPath);
+                        } catch (Exception ignored) { }
+                    }
+                    try { Thread.sleep(2000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                } else {
+                    throw e;
+                }
+            }
+        }
+        if (outputStream == null) {
+            throw new IOException("Failed to open HDFS append stream after " + maxRetries + " attempts due to lease issues.");
+        }
     }
 
     /**

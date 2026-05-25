@@ -83,6 +83,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 
+    /** Method Not Allowed (e.g., GET on POST endpoint) */
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(
+            org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        log.warn("Method not supported: {}", ex.getMessage());
+        Map<String, Object> body = buildErrorBody(
+                HttpStatus.METHOD_NOT_ALLOWED, ex.getMessage(), List.of());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(body);
+    }
+
     // ─── helpers ────────────────────────────────────────────────────────
 
     private Map<String, Object> buildErrorBody(HttpStatus status, String message,
